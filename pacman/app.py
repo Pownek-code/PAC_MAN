@@ -7,6 +7,7 @@ import pygame
 from pacman import theme
 from pacman.config import GameConfig
 from pacman.highscores import HighscoreTable
+from pacman.macos import focus_window
 from pacman.scenes import MainMenuScene, Scene
 
 MAX_FRAME_TIME = 1 / 30
@@ -32,6 +33,7 @@ class App:
         theme.draw_player(icon, (16, 16), 14, 0.0, 35)
         pygame.display.set_icon(icon)
         self.screen = pygame.display.set_mode(self.size)
+        focus_window()
         self.backdrop = theme.draw_backdrop(self.size)
         self.highscores = HighscoreTable(config.highscore_file)
         self.highscores.load()
@@ -49,6 +51,7 @@ class App:
     def run(self) -> None:
         """Run until the player quits, then close the window."""
         clock = pygame.time.Clock()
+        first_frame = True
         try:
             while self.running:
                 dt = min(clock.tick(self.config.fps) / 1000, MAX_FRAME_TIME)
@@ -56,7 +59,12 @@ class App:
                     if event.type == pygame.QUIT:
                         self.running = False
                     else:
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            focus_window()
                         self.scene.handle(event)
+                if first_frame:
+                    focus_window()
+                    first_frame = False
                 self.scene.update(dt)
                 self.scene.draw(self.screen)
                 pygame.display.flip()
