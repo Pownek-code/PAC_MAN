@@ -59,7 +59,7 @@ exits with a non-zero status, never a traceback.
 | --- | --- |
 | Arrow keys / W A S D | Move (a turn is remembered until it becomes possible) |
 | P / Esc | Pause menu: *Resume* or *Main Menu* |
-| Enter / Space | Confirm in menus |
+| Enter / Space or mouse click | Confirm in menus (the mouse can also hover to select) |
 | F1 | Toggle cheat mode |
 
 ### Cheat mode

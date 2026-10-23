@@ -30,6 +30,13 @@ DIRECTION_KEYS = {
 CONFIRM_KEYS = (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE)
 
 
+def is_back_event(event: pygame.event.Event) -> bool:
+    """Return True for Enter, Space, Esc or a left click."""
+    if event.type == pygame.KEYDOWN:
+        return event.key in CONFIRM_KEYS or event.key == pygame.K_ESCAPE
+    return event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+
+
 class Scene:
     """Base class of every screen."""
 
@@ -48,15 +55,34 @@ class Scene:
 
 
 class Menu:
-    """A vertical list of choices driven by the arrow keys and Enter."""
+    """A vertical list of choices driven by the keyboard or the mouse."""
 
     def __init__(self, items: list[tuple[str, Callable[[], None]]]) -> None:
         """Create a menu of ``(label, action)`` pairs."""
         self.items = items
         self.selected = 0
+        self.rects: list[pygame.Rect] = []
+
+    def item_at(self, pos: tuple[int, int]) -> int | None:
+        """Return the index of the item under ``pos``, if any."""
+        for i, rect in enumerate(self.rects):
+            if rect.collidepoint(pos):
+                return i
+        return None
 
     def handle(self, event: pygame.event.Event) -> None:
         """Move the selection or run the selected action."""
+        if event.type == pygame.MOUSEMOTION:
+            hovered = self.item_at(event.pos)
+            if hovered is not None:
+                self.selected = hovered
+            return
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            clicked = self.item_at(event.pos)
+            if clicked is not None:
+                self.selected = clicked
+                self.items[clicked][1]()
+            return
         if event.type != pygame.KEYDOWN:
             return
         if event.key in (pygame.K_UP, pygame.K_w):
@@ -70,11 +96,13 @@ class Menu:
              size: int = 46) -> None:
         """Draw the menu, centred horizontally, starting at ``top``."""
         cx = surface.get_width() / 2
+        self.rects = []
         for i, (label, _) in enumerate(self.items):
             y = top + i * size * 1.25
             chosen = i == self.selected
             color = theme.SPICE_CORE if chosen else theme.TEXT_DIM
             rect = theme.text(surface, label, size, color, center=(cx, y))
+            self.rects.append(rect.inflate(80, size * 0.25))
             if chosen:
                 pulse = 1 + 0.15 * abs(math.sin(clock * 4))
                 for side in (-1, 1):
@@ -148,9 +176,8 @@ class HighscoreScene(Scene):
     """The top 10."""
 
     def handle(self, event: pygame.event.Event) -> None:
-        """Any confirm or Esc key goes back."""
-        if event.type == pygame.KEYDOWN and (
-                event.key in CONFIRM_KEYS or event.key == pygame.K_ESCAPE):
+        """Enter, Esc or a click goes back."""
+        if is_back_event(event):
             self.app.switch(MainMenuScene(self.app))
 
     def draw(self, surface: pygame.Surface) -> None:
@@ -172,7 +199,7 @@ class HighscoreScene(Scene):
                        topleft=(width * 0.37, y))
             score = theme.font(36).render(str(entry.score), True, color)
             surface.blit(score, score.get_rect(topright=(width * 0.7, y)))
-        theme.text(surface, "Press Enter or Esc to return", 26,
+        theme.text(surface, "Press Enter, Esc or click to return", 26,
                    theme.TEXT_DIM, center=(width / 2, height * 0.93))
 
 
@@ -180,7 +207,7 @@ INSTRUCTIONS = (
     ("GOAL", "Harvest every grain of spice in the maze to clear the level."),
     ("", "Clear all the levels before your lives or the time run out."),
     ("MOVE", "Arrow keys or W A S D."),
-    ("PAUSE", "P or Esc, then Resume or return to the main menu."),
+    ("PAUSE", "P or Esc, then Resume or Main Menu (keys or mouse)."),
     ("SPICE", "Small grain: pacgum.  Glowing orb in a corner: melange."),
     ("MELANGE", "Eat it and the Harkonnen turn blue: eat them for points."),
     ("", "An eaten Harkonnen is swallowed by the sand and comes back"),
@@ -196,9 +223,8 @@ class InstructionsScene(Scene):
     """Controls and rules."""
 
     def handle(self, event: pygame.event.Event) -> None:
-        """Any confirm or Esc key goes back."""
-        if event.type == pygame.KEYDOWN and (
-                event.key in CONFIRM_KEYS or event.key == pygame.K_ESCAPE):
+        """Enter, Esc or a click goes back."""
+        if is_back_event(event):
             self.app.switch(MainMenuScene(self.app))
 
     def draw(self, surface: pygame.Surface) -> None:
@@ -216,7 +242,7 @@ class InstructionsScene(Scene):
                        topleft=(width * 0.13, y))
             theme.text(surface, line, 28, theme.TEXT,
                        topleft=(width * 0.29, y))
-        theme.text(surface, "Press Enter or Esc to return", 26,
+        theme.text(surface, "Press Enter, Esc or click to return", 26,
                    theme.TEXT_DIM, center=(width / 2, height * 0.93))
 
 
@@ -252,13 +278,14 @@ class GameScene(Scene):
         if event.type == pygame.WINDOWFOCUSLOST:
             self.paused = True
             return
-        if event.type != pygame.KEYDOWN:
-            return
         if self.paused:
-            if event.key in (pygame.K_ESCAPE, pygame.K_p):
+            if (event.type == pygame.KEYDOWN
+                    and event.key in (pygame.K_ESCAPE, pygame.K_p)):
                 self.paused = False
             else:
                 self.pause_menu.handle(event)
+            return
+        if event.type != pygame.KEYDOWN:
             return
         session = self.session
         cheat_keys: dict[int, Callable[[], None]] = {
@@ -410,8 +437,8 @@ class ErrorScene(Scene):
         self.detail = detail
 
     def handle(self, event: pygame.event.Event) -> None:
-        """Any key returns to the main menu."""
-        if event.type == pygame.KEYDOWN:
+        """Any key or click returns to the main menu."""
+        if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
             self.app.switch(MainMenuScene(self.app))
 
     def draw(self, surface: pygame.Surface) -> None:
@@ -422,8 +449,8 @@ class ErrorScene(Scene):
                    center=(width / 2, height * 0.35))
         theme.text(surface, self.detail, 28, theme.TEXT,
                    center=(width / 2, height * 0.45))
-        theme.text(surface, "Press any key to return to the main menu", 26,
-                   theme.TEXT_DIM, center=(width / 2, height * 0.6))
+        theme.text(surface, "Press any key or click to return to the menu",
+                   26, theme.TEXT_DIM, center=(width / 2, height * 0.6))
 
 
 def draw_parade(surface: pygame.Surface, clock: float, y: float) -> None:

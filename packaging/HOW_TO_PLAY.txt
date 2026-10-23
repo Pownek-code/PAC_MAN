@@ -15,7 +15,7 @@ Goal
 Controls
   Arrow keys or W A S D ... move
   P or Esc ................ pause (Resume / Main Menu)
-  Enter ................... confirm in menus
+  Enter / mouse click ..... confirm in menus
   F1 ...................... toggle cheat mode
 
 Melange
