@@ -1,0 +1,35 @@
+PAC-MAN OF ARRAKIS
+==================
+
+Start: run play.sh (Linux/macOS) or play.bat (Windows), use the "play"
+action of the itch.io app, or from a terminal:
+
+    ./pac-man config.json
+
+Goal
+  Eat every grain of spice (pacgum) in the maze to clear the level.
+  Clear the 10 levels before you run out of lives.
+  Each level has a time limit; when it runs out you lose a life and the
+  timer starts again.
+
+Controls
+  Arrow keys or W A S D ... move
+  P or Esc ................ pause (Resume / Main Menu)
+  Enter ................... confirm in menus
+  F1 ...................... toggle cheat mode
+
+Melange
+  The glowing orbs in the four corners are super-pacgums: eat one and the
+  Harkonnen turn blue for a few seconds - eat them for bonus points. An
+  eaten Harkonnen is swallowed by the sand and returns to its corner.
+
+Cheat mode (F1, for reviewers)
+  I invincible   F freeze ghosts   V speed boost
+  L extra life   N skip level      T refill the timer
+
+Options
+  Edit config.json (JSON, '#' and '//' comments allowed) to change lives,
+  points, speeds, time limits, maze sizes, window size and where the
+  highscores are saved (highscores.json, next to config.json).
+  Invalid values are replaced by safe defaults and reported in the
+  terminal and on the main menu.

@@ -1,0 +1,14 @@
+# Launch manifest read by the itch.io app: it starts the game with the
+# bundled configuration file, as the subject requires one argument.
+[[actions]]
+name = "play"
+path = "pac-man{{EXT}}"
+args = ["config.json"]
+
+[[actions]]
+name = "Edit configuration"
+path = "config.json"
+
+[[actions]]
+name = "How to play"
+path = "HOW_TO_PLAY.txt"
