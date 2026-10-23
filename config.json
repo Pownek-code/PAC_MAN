@@ -1,0 +1,48 @@
+# Pac-Man of Arrakis - game configuration.
+# Lines starting with '#' are comments; '//' and '/* */' comments work too.
+# Every key is optional: missing or invalid values fall back to safe
+# defaults (see README.md, section "Configuration").
+{
+    "highscore_filename": "highscores.json",   // relative to this file
+
+    "lives": 3,
+    "points_per_pacgum": 10,
+    "points_per_super_pacgum": 50,
+    "points_per_ghost": 200,
+
+    # Seed of the first level's maze; later levels are random.
+    "seed": 42,
+    # Seconds per level (a level can override it).
+    "level_max_time": 120,
+    # Max pacgums per level, 0 = one on every free corridor tile.
+    "pacgum": 0,
+
+    # Speeds in tiles per second; ghosts get faster on every level.
+    "player_speed": 8.0,
+    "ghost_speed": 5.5,
+    "ghost_speed_step": 0.15,
+    "frightened_time": 7,
+    "ghost_respawn_time": 5,
+
+    # Start with cheat mode on (it can always be toggled with F1).
+    "cheat_mode": false,
+
+    "window_width": 1280,
+    "window_height": 800,
+    "fps": 60,
+
+    # Maze sizes are in generator cells (each cell is 2x2 tiles on screen).
+    # Width 5-45, height 5-35; the '42' needs at least 14x10.
+    "levels": [
+        {"width": 15, "height": 11},
+        {"width": 17, "height": 11},
+        {"width": 17, "height": 13, "level_max_time": 130},
+        {"width": 19, "height": 13, "level_max_time": 140},
+        {"width": 19, "height": 15, "level_max_time": 150},
+        {"width": 21, "height": 15, "level_max_time": 160},
+        {"width": 21, "height": 17, "level_max_time": 180},
+        {"width": 23, "height": 17, "level_max_time": 200},
+        {"width": 25, "height": 19, "level_max_time": 220},
+        {"width": 27, "height": 19, "level_max_time": 240}
+    ]
+}
